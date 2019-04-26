@@ -2,11 +2,13 @@
 import cv2
 import numpy as np
 
+import os
 from os import listdir
 from os.path import isfile, isdir, join
 
 
-ImgPath = "C:\STEN\\"
+ImgPath = "C:\\Users\\ans10\\Nox_share\\Test\\"
+no4StarPath = "C:\\Users\\ans10\\Nox_share\\0\\"
 
 def GaussianBlur(Img):
     return cv2.GaussianBlur(Img,(3,3),0)
@@ -25,7 +27,7 @@ star_h = 18
 method = cv2.TM_SQDIFF_NORMED
 font = cv2.FONT_HERSHEY_SIMPLEX 
 
-def CountStar(gImg):
+def CountStar(gImg,outImg):
     starCount = [0,0,0,0,0,0,0,0,0,0,0]
     star4 = 0
     star3 = 0
@@ -49,34 +51,43 @@ def CountStar(gImg):
 
             if matchVal >= 0.9:
                 starCount[j]+=1
-                cv2.rectangle(srcImg,top_left, bottom_right, (0,0,255), 1)
+                cv2.rectangle(outImg,top_left, bottom_right, (0,0,255), 1)
                 #cv2.putText(srcImg,str(round(matchVal,2)),(bottom_right[0],bottom_right[1]+i*15+20),font,0.4,(0,255,255))
         if starCount[j] == 4:
             star4+=1
         elif starCount[j] == 3:
             star3+=1
+            
+    cv2.putText(outImg,str(star4) + str(star3),(455,165),font,2,(0,0,255),3)
     return (star4,star3)
 
 
-# 指定要列出所有檔案的目錄
-mypath = "\\Mac\Home\Downloads\Phisten"
 
 # 取得所有檔案與子目錄名稱
-files = listdir(mypath)
+files = listdir(ImgPath)
 
 # 以迴圈處理
 for f in files:
   # 產生檔案的絕對路徑
-  fullpath = join(mypath, f)
+  fullpath = join(ImgPath, f)
   # 判斷 fullpath 是檔案還是目錄
   if isfile(fullpath):
     print("檔案：", f)
   elif isdir(fullpath):
     print("目錄：", f)
+    
+    srcImg =cv2.imread(fullpath + "\\heroList.png")
+    gImg = GaussianBlur(srcImg)
+    resS4,resS3 = CountStar(gImg,srcImg)
+    cv2.imwrite(fullpath + "\\" + str(resS4)+str(resS3) + "_" + f + ".png" , srcImg)
+    if resS4 == 0:
+        os.rename(fullpath,no4StarPath + str(resS4)+str(resS3) + "_" + f)
+    else:
+        os.rename(fullpath,ImgPath + str(resS4)+str(resS3) + "_" + f)
 
 
-srcImg = PathImg("heroList.png")
-gImg = GaussianBlur(srcImg)
+#srcImg = PathImg("heroList.png")
+#gImg = GaussianBlur(srcImg)
 
 #resS4,resS3 = CountStar(gImg)
 #cv2.imshow(str(resS4) + str(resS3),srcImg)
